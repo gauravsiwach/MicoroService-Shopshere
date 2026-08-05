@@ -15,8 +15,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class OrderRequest {
 
-    @NotNull(message = "Product ID is required")
-    private Long productId;
+    @NotBlank(message = "Product SKU is required")
+    private String productSku;
 
     @NotNull(message = "Quantity is required")
     @Positive(message = "Quantity must be positive")

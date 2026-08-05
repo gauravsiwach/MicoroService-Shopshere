@@ -24,8 +24,8 @@ public class Order {
     @Column(nullable = false, unique = true)
     private String orderNumber;
 
-    @Column(nullable = false)
-    private Long productId;
+    @Column(nullable = false, length = 100)
+    private String productSku;
 
     @Column(nullable = false)
     private Integer quantity;

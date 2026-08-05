@@ -93,21 +93,17 @@ public class InventoryController {
 
     @PostMapping("/reserve")
     @Operation(summary = "Reserve stock")
-    public ResponseEntity<InventoryResponse> reserveStock(
-            @RequestParam String sku,
-            @RequestParam Integer quantity) {
-        log.info("REST request to reserve stock for SKU: {}, quantity: {}", sku, quantity);
-        InventoryResponse response = inventoryService.reserveStock(sku, quantity);
+    public ResponseEntity<InventoryResponse> reserveStock(@Valid @RequestBody StockValidationRequest request) {
+        log.info("REST request to reserve stock for SKU: {}, quantity: {}", request.getSku(), request.getQuantity());
+        InventoryResponse response = inventoryService.reserveStock(request.getSku(), request.getQuantity());
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/release")
     @Operation(summary = "Release reserved stock")
-    public ResponseEntity<InventoryResponse> releaseStock(
-            @RequestParam String sku,
-            @RequestParam Integer quantity) {
-        log.info("REST request to release stock for SKU: {}, quantity: {}", sku, quantity);
-        InventoryResponse response = inventoryService.releaseStock(sku, quantity);
+    public ResponseEntity<InventoryResponse> releaseStock(@Valid @RequestBody StockValidationRequest request) {
+        log.info("REST request to release stock for SKU: {}, quantity: {}", request.getSku(), request.getQuantity());
+        InventoryResponse response = inventoryService.releaseStock(request.getSku(), request.getQuantity());
         return ResponseEntity.ok(response);
     }
 }

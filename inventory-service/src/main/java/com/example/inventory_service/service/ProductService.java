@@ -93,7 +93,7 @@ public class ProductService {
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
         product.setCategory(request.getCategory());
-        product.setActive(request.getActive());
+        product.setActive(request.getActive() != null ? request.getActive() : true);
         return product;
     }
 

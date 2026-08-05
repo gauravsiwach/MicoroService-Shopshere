@@ -1,4 +1,4 @@
-package com.example.order_service.dto;
+package com.example.notification_service.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,9 +10,8 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderResponse {
-
-    private Long id;
+public class OrderEvent {
+    private String eventType;
     private String orderNumber;
     private String productSku;
     private Integer quantity;

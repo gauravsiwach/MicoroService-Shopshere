@@ -162,8 +162,8 @@ public class InventoryService {
         Inventory inventory = new Inventory();
         inventory.setProduct(product);
         inventory.setQuantity(request.getQuantity());
-        inventory.setReservedQuantity(request.getReservedQuantity());
-        inventory.setLowStockThreshold(request.getLowStockThreshold());
+        inventory.setReservedQuantity(request.getReservedQuantity() != null ? request.getReservedQuantity() : 0);
+        inventory.setLowStockThreshold(request.getLowStockThreshold() != null ? request.getLowStockThreshold() : 10);
         return inventory;
     }
 
