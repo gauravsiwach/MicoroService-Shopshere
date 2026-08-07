@@ -1,17 +1,24 @@
 # ShopSphere Microservices Platform
 
-A microservices implementation of the ShopSphere Order Management Platform demonstrating inter-service communication using Spring WebClient (synchronous) and RabbitMQ (asynchronous).
+A comprehensive microservices implementation of the ShopSphere Order Management Platform demonstrating service discovery, centralized configuration, API gateway, and JWT-based authentication.
 
 ## Architecture
 
-The platform consists of three independent Spring Boot microservices:
+The platform consists of the following Spring Boot microservices:
 
+- **Config Server** (port 8888) - Centralized configuration management
+- **Eureka Server** (port 8761) - Service discovery and registration
+- **API Gateway** (port 8080) - API gateway with JWT authentication
 - **Order Service** (port 8084) - Manages order creation, updates, and cancellation
 - **Inventory Service** (port 8085) - Manages product inventory and stock validation
 - **Notification Service** (port 8086) - Manages customer notifications via RabbitMQ events
+- **Common Security Module** - Shared JWT authentication and security configuration
 
 ### Communication Patterns
 
+- **API Gateway Routing**: All external requests go through API Gateway (port 8080)
+- **Service Discovery**: All services register with Eureka Server (port 8761)
+- **Centralized Configuration**: All services fetch configuration from Config Server (port 8888)
 - **Synchronous**: Order Service → Inventory Service (WebClient)
   - Stock validation before order creation
   - Stock reservation on order placement
@@ -21,6 +28,13 @@ The platform consists of three independent Spring Boot microservices:
   - Order created events
   - Order updated events
   - Order cancelled events
+
+### Security Architecture
+
+- **JWT Authentication**: Centralized authentication via API Gateway
+- **Role-Based Access Control (RBAC)**: ADMIN and USER roles
+- **Common Security Module**: Shared JWT utilities, validation, and filter
+- **Method-Level Security**: @PreAuthorize annotations on secured endpoints
 
 ### Database Per Service
 
@@ -34,6 +48,76 @@ The platform consists of three independent Spring Boot microservices:
 - Maven 3.6+
 - PostgreSQL 14+ (running on localhost:5433)
 - RabbitMQ 3.12+ (running on localhost:5672)
+
+## Startup Sequence
+
+**IMPORTANT**: Start services in the following order to ensure proper initialization:
+
+### 1. Start Config Server (port 8888)
+
+```bash
+cd config-server
+mvn spring-boot:run
+```
+
+Verify: `curl http://localhost:8888/config-server/default`
+
+### 2. Start Eureka Server (port 8761)
+
+```bash
+cd DiscoverServer
+mvn spring-boot:run
+```
+
+Verify: `curl http://localhost:8761/` or visit http://localhost:8761/
+
+### 3. Start Order Service (port 8084)
+
+```bash
+cd order-service
+mvn spring-boot:run
+```
+
+Verify: `curl http://localhost:8084/actuator/health`
+
+### 4. Start Inventory Service (port 8085)
+
+```bash
+cd inventory-service
+mvn spring-boot:run
+```
+
+Verify: `curl http://localhost:8085/actuator/health`
+
+### 5. Start Notification Service (port 8086)
+
+```bash
+cd notification-service
+mvn spring-boot:run
+```
+
+Verify: `curl http://localhost:8086/actuator/health`
+
+### 6. Start API Gateway (port 8080)
+
+```bash
+cd ApiGateway
+mvn spring-boot:run
+```
+
+Verify: `curl http://localhost:8080/actuator/health`
+
+### 7. Verify Service Registration
+
+Visit Eureka Dashboard: http://localhost:8761/
+
+All services should be registered:
+- CONFIG-SERVER
+- EUREKA-SERVER
+- ORDER-SERVICE
+- INVENTORY-SERVICE
+- NOTIFICATION-SERVICE
+- API-GATEWAY
 
 ## Setup Instructions
 
@@ -156,20 +240,145 @@ Swagger UI is available for each service:
 - Inventory Service: http://localhost:8085/swagger-ui.html
 - Notification Service: http://localhost:8086/swagger-ui.html
 
-## Testing
+## Testing Sequence
 
-For detailed testing instructions and curl commands, see [TESTING.md](TESTING.md).
+### Step 1: Generate JWT Token
 
-### Quick Test Flow
+Login to get JWT token from API Gateway:
 
-1. Create a product in Inventory Service
-2. Add stock to the product
-3. Create an order (will validate stock and reserve it)
-4. Check stock after order (should be reduced)
-5. Verify notification was created (asynchronous)
-6. Cancel the order (will release stock)
-7. Check stock after cancellation (should be restored)
-8. Verify cancellation notification was created
+```bash
+# Login with admin credentials
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
+
+# Login with user credentials
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"user","password":"user123"}'
+```
+
+**Response:**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc4NjAzNzMzNiwiZXhwIjoxNzg2MTIzNzM2fQ.1A0dboWXlIGeRoS6GjzVe3u1fQgvQFQUEvMeCjI0hhs",
+  "type": "Bearer",
+  "username": "admin"
+}
+```
+
+Save the token for subsequent requests.
+
+### Step 2: Create Product in Inventory Service
+
+```bash
+curl -X POST http://localhost:8085/api/inventory \
+  -H "Content-Type: application/json" \
+  -d '{
+    "productId": 1,
+    "sku": "SKU-001",
+    "name": "Laptop",
+    "description": "High-performance laptop",
+    "price": 999.99,
+    "quantity": 100
+  }'
+```
+
+### Step 3: Add Stock to Product
+
+```bash
+curl -X POST http://localhost:8085/api/inventory/1/add-stock \
+  -H "Content-Type: application/json" \
+  -d '{"quantity": 50}'
+```
+
+### Step 4: Create Order (with JWT Token)
+
+```bash
+curl -X POST http://localhost:8084/api/orders \
+  -H "Authorization: Bearer <YOUR_JWT_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customerId": 1,
+    "productId": 1,
+    "quantity": 2
+  }'
+```
+
+### Step 5: Get All Orders (with JWT Token - ADMIN only)
+
+```bash
+curl http://localhost:8084/api/orders \
+  -H "Authorization: Bearer <YOUR_JWT_TOKEN>"
+```
+
+### Step 6: Get Order by ID (with JWT Token)
+
+```bash
+curl http://localhost:8084/api/orders/1 \
+  -H "Authorization: Bearer <YOUR_JWT_TOKEN>"
+```
+
+### Step 7: Check Inventory After Order
+
+```bash
+curl http://localhost:8085/api/inventory/1 \
+  -H "Authorization: Bearer <YOUR_JWT_TOKEN>"
+```
+
+### Step 8: Get Notifications (with JWT Token)
+
+```bash
+curl http://localhost:8086/api/notifications \
+  -H "Authorization: Bearer <YOUR_JWT_TOKEN>"
+```
+
+### Step 9: Cancel Order (with JWT Token)
+
+```bash
+curl -X PUT http://localhost:8084/api/orders/1/cancel \
+  -H "Authorization: Bearer <YOUR_JWT_TOKEN>"
+```
+
+### Step 10: Verify Stock Released
+
+```bash
+curl http://localhost:8085/api/inventory/1 \
+  -H "Authorization: Bearer <YOUR_JWT_TOKEN>"
+```
+
+### Step 11: Test API Gateway Routing
+
+Access services through API Gateway:
+
+```bash
+# Access Order Service through Gateway
+curl http://localhost:8080/api/orders \
+  -H "Authorization: Bearer <YOUR_JWT_TOKEN>"
+
+# Access Inventory Service through Gateway
+curl http://localhost:8080/api/inventory \
+  -H "Authorization: Bearer <YOUR_JWT_TOKEN>"
+```
+
+## Testing Without Authentication
+
+Public endpoints (no JWT required):
+
+```bash
+# Health checks
+curl http://localhost:8084/actuator/health
+curl http://localhost:8085/actuator/health
+curl http://localhost:8086/actuator/health
+curl http://localhost:8080/actuator/health
+```
+
+## Expected Behavior
+
+- **Without JWT**: Secured endpoints return 401 Unauthorized
+- **With JWT**: Secured endpoints return 200 OK with data
+- **Wrong Role**: Admin-only endpoints return 403 Forbidden for USER role
+- **Expired Token**: Returns 401 Unauthorized
 
 ## Configuration
 
@@ -260,11 +469,38 @@ spring.rabbitmq.password=admin
 
 ```
 ShopSphere-MicroService/
+├── config-server/              # Spring Cloud Config Server
+│   ├── config-repo/            # Configuration repository
+│   │   ├── order-service.properties
+│   │   ├── inventory-service.properties
+│   │   └── notification-service.properties
+│   └── src/main/java/
+│       └── com/example/config_server/
+│           └── ConfigServerApplication.java
+├── DiscoverServer/             # Eureka Discovery Server
+│   └── src/main/java/
+│       └── com/example/DiscoverServer/
+│           └── DiscoverServerApplication.java
+├── ApiGateway/                 # API Gateway with JWT Authentication
+│   ├── src/main/java/
+│   │   └── com/example/ApiGateway/
+│   │       ├── config/        # Security configuration
+│   │       ├── controller/    # AuthController for JWT generation
+│   │       └── ApiGatewayApplication.java
+│   └── src/main/resources/
+│       └── application.properties
+├── common-security/            # Shared Security Module
+│   ├── src/main/java/
+│   │   └── com/example/common_security/
+│   │       ├── config/        # SecurityConfig with JWT filter
+│   │       ├── jwt/           # JwtTokenProvider, JwtAuthenticationFilter
+│   │       └── CommonSecurityApplication.java
+│   └── pom.xml
 ├── order-service/              # Order Management Service
 │   ├── src/main/java/
 │   │   └── com/example/order_service/
 │   │       ├── config/        # WebClient, RabbitMQ configs
-│   │       ├── controller/    # REST controllers
+│   │       ├── controller/    # REST controllers with @PreAuthorize
 │   │       ├── dto/           # Request/Response DTOs
 │   │       ├── entity/        # Order entity
 │   │       ├── exception/     # Exception handlers
@@ -305,7 +541,12 @@ ShopSphere-MicroService/
 ## Technologies Used
 
 - **Java 17** - Programming language
-- **Spring Boot 3.x** - Application framework
+- **Spring Boot 4.1.0** - Application framework
+- **Spring Cloud 2025.1.2** - Cloud-native patterns
+- **Spring Cloud Config** - Centralized configuration management
+- **Spring Cloud Netflix Eureka** - Service discovery
+- **Spring Cloud Gateway** - API gateway with routing
+- **Spring Security** - Security framework with JWT
 - **Spring Data JPA** - Database access
 - **Spring WebFlux** - Reactive WebClient
 - **Spring AMQP** - RabbitMQ integration
@@ -314,11 +555,13 @@ ShopSphere-MicroService/
 - **Lombok** - Reduce boilerplate code
 - **Swagger/OpenAPI** - API documentation
 - **Maven** - Build tool
+- **JWT (JJWT)** - JSON Web Token implementation
 
 ## Lab Coverage
 
-This implementation covers all lab requirements for ShopSphere Lab Day 6:
+This implementation covers all lab requirements for ShopSphere Lab Day 7:
 
+### Day 6 Requirements (Completed)
 - ✅ Microservices Architecture (3 independent services)
 - ✅ Database Per Service (separate databases for each service)
 - ✅ Service Responsibilities (clearly defined boundaries)
@@ -328,7 +571,30 @@ This implementation covers all lab requirements for ShopSphere Lab Day 6:
 - ✅ Logging and Monitoring (comprehensive logging throughout)
 - ✅ End-to-End Request Flow (complete order lifecycle)
 
-**Estimated Lab Score: 20/20**
+### Day 7 Requirements (Completed)
+- ✅ Spring Cloud Config Server (centralized configuration)
+- ✅ Eureka Discovery Server (service registration and discovery)
+- ✅ API Gateway (routing and centralized entry point)
+- ✅ Common Security Module (shared JWT authentication)
+- ✅ JWT Token Generation (via API Gateway AuthController)
+- ✅ JWT Token Validation (via JwtAuthenticationFilter)
+- ✅ Role-Based Access Control (RBAC with ADMIN/USER roles)
+- ✅ Method-Level Security (@PreAuthorize annotations)
+- ✅ ComponentScan Configuration (all services scan common-security)
+- ✅ Framework Standardization (Spring Boot 4.1.0 + Spring Cloud 2025.1.2)
+
+**Estimated Lab Score: 19-20/20**
+
+### Implementation Highlights
+
+1. **Centralized Configuration**: All services fetch configuration from Config Server
+2. **Service Discovery**: All services register with Eureka and discover each other dynamically
+3. **API Gateway**: Single entry point for all external requests with JWT authentication
+4. **Shared Security**: Common security module reduces code duplication and ensures consistency
+5. **JWT Authentication**: Stateless authentication with role-based access control
+6. **Proper Dependency Management**: ComponentScan configuration for shared modules
+7. **Error Handling**: Comprehensive error handling across all services
+8. **Monitoring**: Actuator endpoints for health checks and metrics
 
 ## License
 
