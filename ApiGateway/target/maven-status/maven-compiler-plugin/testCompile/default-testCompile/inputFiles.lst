@@ -1,0 +1,13 @@
+/Users/gaurav.siwach/Work/Gaurav/JAVA_Learning/ShopSphere-MicroService/ApiGateway/src/test/java/com/example/ApiGateway/ApiGatewayApplicationTests.java
+/Users/gaurav.siwach/Work/Gaurav/JAVA_Learning/ShopSphere-MicroService/ApiGateway/src/test/java/com/example/ApiGateway/JUnit5AssertionTest.java
+/Users/gaurav.siwach/Work/Gaurav/JAVA_Learning/ShopSphere-MicroService/ApiGateway/src/test/java/com/example/ApiGateway/JUnit5ExceptionTest.java
+/Users/gaurav.siwach/Work/Gaurav/JAVA_Learning/ShopSphere-MicroService/ApiGateway/src/test/java/com/example/ApiGateway/JUnit5LifecycleTest.java
+/Users/gaurav.siwach/Work/Gaurav/JAVA_Learning/ShopSphere-MicroService/ApiGateway/src/test/java/com/example/ApiGateway/JUnit5ParameterizedTest.java
+/Users/gaurav.siwach/Work/Gaurav/JAVA_Learning/ShopSphere-MicroService/ApiGateway/src/test/java/com/example/ApiGateway/JavaHttpClientTest.java
+/Users/gaurav.siwach/Work/Gaurav/JAVA_Learning/ShopSphere-MicroService/ApiGateway/src/test/java/com/example/ApiGateway/MockitoTest.java
+/Users/gaurav.siwach/Work/Gaurav/JAVA_Learning/ShopSphere-MicroService/ApiGateway/src/test/java/com/example/ApiGateway/RestAssuredTest.java
+/Users/gaurav.siwach/Work/Gaurav/JAVA_Learning/ShopSphere-MicroService/ApiGateway/src/test/java/com/example/ApiGateway/SecurityTest.java
+/Users/gaurav.siwach/Work/Gaurav/JAVA_Learning/ShopSphere-MicroService/ApiGateway/src/test/java/com/example/ApiGateway/SpringBootControllerTest.java
+/Users/gaurav.siwach/Work/Gaurav/JAVA_Learning/ShopSphere-MicroService/ApiGateway/src/test/java/com/example/ApiGateway/SpringBootServiceIntegrationTest.java
+/Users/gaurav.siwach/Work/Gaurav/JAVA_Learning/ShopSphere-MicroService/ApiGateway/src/test/java/com/example/ApiGateway/SpringBootTestContextLoadingTest.java
+/Users/gaurav.siwach/Work/Gaurav/JAVA_Learning/ShopSphere-MicroService/ApiGateway/src/test/java/com/example/ApiGateway/TestRestTemplateTest.java
