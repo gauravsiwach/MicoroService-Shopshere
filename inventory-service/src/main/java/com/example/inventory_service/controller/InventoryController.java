@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class InventoryController {
 
     @PostMapping
     @Operation(summary = "Create inventory for a product")
+    @PreAuthorize("hasAuthority('INVENTORY_UPDATE')")
     public ResponseEntity<InventoryResponse> createInventory(@Valid @RequestBody InventoryRequest inventoryRequest) {
         log.info("REST request to create inventory");
         InventoryResponse inventoryResponse = inventoryService.createInventory(inventoryRequest);
@@ -35,6 +37,7 @@ public class InventoryController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get inventory by ID")
+    @PreAuthorize("hasAuthority('INVENTORY_READ')")
     public ResponseEntity<InventoryResponse> getInventoryById(@PathVariable Long id) {
         log.info("REST request to get inventory by id: {}", id);
         InventoryResponse inventoryResponse = inventoryService.getInventoryById(id);
@@ -43,6 +46,7 @@ public class InventoryController {
 
     @GetMapping("/product/{productId}")
     @Operation(summary = "Get inventory by product ID")
+    @PreAuthorize("hasAuthority('INVENTORY_READ')")
     public ResponseEntity<InventoryResponse> getInventoryByProductId(@PathVariable Long productId) {
         log.info("REST request to get inventory by product id: {}", productId);
         InventoryResponse inventoryResponse = inventoryService.getInventoryByProductId(productId);
@@ -51,6 +55,7 @@ public class InventoryController {
 
     @GetMapping("/sku/{sku}")
     @Operation(summary = "Get inventory by product SKU")
+    @PreAuthorize("hasAuthority('INVENTORY_READ')")
     public ResponseEntity<InventoryResponse> getInventoryByProductSku(@PathVariable String sku) {
         log.info("REST request to get inventory by SKU: {}", sku);
         InventoryResponse inventoryResponse = inventoryService.getInventoryByProductSku(sku);
@@ -59,6 +64,7 @@ public class InventoryController {
 
     @GetMapping
     @Operation(summary = "Get all inventory")
+    @PreAuthorize("hasAuthority('INVENTORY_READ')")
     public ResponseEntity<List<InventoryResponse>> getAllInventory() {
         log.info("REST request to get all inventory");
         List<InventoryResponse> inventoryList = inventoryService.getAllInventory();
@@ -67,6 +73,7 @@ public class InventoryController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update inventory")
+    @PreAuthorize("hasAuthority('INVENTORY_UPDATE')")
     public ResponseEntity<InventoryResponse> updateInventory(
             @PathVariable Long id,
             @Valid @RequestBody InventoryRequest inventoryRequest) {
@@ -77,6 +84,7 @@ public class InventoryController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete inventory")
+    @PreAuthorize("hasAuthority('INVENTORY_UPDATE')")
     public ResponseEntity<Void> deleteInventory(@PathVariable Long id) {
         log.info("REST request to delete inventory with id: {}", id);
         inventoryService.deleteInventory(id);
@@ -85,6 +93,7 @@ public class InventoryController {
 
     @PostMapping("/validate")
     @Operation(summary = "Validate stock availability")
+    @PreAuthorize("hasAuthority('INVENTORY_READ')")
     public ResponseEntity<StockValidationResponse> validateStock(@Valid @RequestBody StockValidationRequest request) {
         log.info("REST request to validate stock for SKU: {}", request.getSku());
         StockValidationResponse response = inventoryService.validateStock(request);
@@ -93,6 +102,7 @@ public class InventoryController {
 
     @PostMapping("/reserve")
     @Operation(summary = "Reserve stock")
+    @PreAuthorize("hasAuthority('INVENTORY_UPDATE')")
     public ResponseEntity<InventoryResponse> reserveStock(@Valid @RequestBody StockValidationRequest request) {
         log.info("REST request to reserve stock for SKU: {}, quantity: {}", request.getSku(), request.getQuantity());
         InventoryResponse response = inventoryService.reserveStock(request.getSku(), request.getQuantity());
@@ -101,6 +111,7 @@ public class InventoryController {
 
     @PostMapping("/release")
     @Operation(summary = "Release reserved stock")
+    @PreAuthorize("hasAuthority('INVENTORY_UPDATE')")
     public ResponseEntity<InventoryResponse> releaseStock(@Valid @RequestBody StockValidationRequest request) {
         log.info("REST request to release stock for SKU: {}, quantity: {}", request.getSku(), request.getQuantity());
         InventoryResponse response = inventoryService.releaseStock(request.getSku(), request.getQuantity());

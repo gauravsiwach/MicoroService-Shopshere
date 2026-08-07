@@ -56,14 +56,25 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
+        
+        // Admin user with all authorities
         manager.createUser(User.withUsername("admin")
                 .password(passwordEncoder().encode("admin123"))
                 .roles("ADMIN")
+                .authorities("ORDER_READ", "ORDER_CREATE", "ORDER_UPDATE", "ORDER_DELETE",
+                           "INVENTORY_READ", "INVENTORY_UPDATE",
+                           "NOTIFICATION_READ", "NOTIFICATION_SEND")
                 .build());
+        
+        // User user with limited authorities
         manager.createUser(User.withUsername("user")
                 .password(passwordEncoder().encode("user123"))
                 .roles("USER")
+                .authorities("ORDER_READ", "ORDER_CREATE",
+                           "INVENTORY_READ",
+                           "NOTIFICATION_READ")
                 .build());
+        
         return manager;
     }
 

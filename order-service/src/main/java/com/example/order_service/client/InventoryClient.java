@@ -3,7 +3,6 @@ package com.example.order_service.client;
 import com.example.order_service.dto.StockValidationResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -16,15 +15,12 @@ public class InventoryClient {
 
     private final WebClient webClient;
 
-    @Value("${inventory.service.base-url}")
-    private String inventoryServiceBaseUrl;
-
     public StockValidationResponse validateStock(String sku, Integer quantity) {
         log.info("Validating stock for SKU: {}, quantity: {}", sku, quantity);
         
         try {
             StockValidationResponse response = webClient.post()
-                    .uri(inventoryServiceBaseUrl + "/api/inventory/validate")
+                    .uri("http://inventory-service/api/inventory/validate")
                     .bodyValue(new StockValidationRequest(sku, quantity))
                     .retrieve()
                     .bodyToMono(StockValidationResponse.class)
@@ -52,7 +48,7 @@ public class InventoryClient {
         
         try {
             webClient.post()
-                    .uri(inventoryServiceBaseUrl + "/api/inventory/reserve")
+                    .uri("http://inventory-service/api/inventory/reserve")
                     .bodyValue(new StockReserveRequest(sku, quantity))
                     .retrieve()
                     .bodyToMono(Void.class)
@@ -73,7 +69,7 @@ public class InventoryClient {
         
         try {
             webClient.post()
-                    .uri(inventoryServiceBaseUrl + "/api/inventory/release")
+                    .uri("http://inventory-service/api/inventory/release")
                     .bodyValue(new StockReserveRequest(sku, quantity))
                     .retrieve()
                     .bodyToMono(Void.class)

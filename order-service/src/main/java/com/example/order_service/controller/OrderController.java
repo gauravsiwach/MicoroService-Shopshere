@@ -26,7 +26,7 @@ public class OrderController {
 
     @PostMapping
     @Operation(summary = "Create a new order")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAuthority('ORDER_CREATE')")
     public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRequest orderRequest) {
         log.info("REST request to create order");
         OrderResponse orderResponse = orderService.createOrder(orderRequest);
@@ -35,7 +35,7 @@ public class OrderController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get order by ID")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAuthority('ORDER_READ')")
     public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long id) {
         log.info("REST request to get order by id: {}", id);
         OrderResponse orderResponse = orderService.getOrderById(id);
@@ -44,7 +44,7 @@ public class OrderController {
 
     @GetMapping("/order-number/{orderNumber}")
     @Operation(summary = "Get order by order number")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAuthority('ORDER_READ')")
     public ResponseEntity<OrderResponse> getOrderByOrderNumber(@PathVariable String orderNumber) {
         log.info("REST request to get order by order number: {}", orderNumber);
         OrderResponse orderResponse = orderService.getOrderByOrderNumber(orderNumber);
@@ -53,7 +53,7 @@ public class OrderController {
 
     @GetMapping
     @Operation(summary = "Get all orders")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ORDER_READ')")
     public ResponseEntity<List<OrderResponse>> getAllOrders() {
         log.info("REST request to get all orders");
         List<OrderResponse> orders = orderService.getAllOrders();
@@ -62,7 +62,7 @@ public class OrderController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing order")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAuthority('ORDER_UPDATE')")
     public ResponseEntity<OrderResponse> updateOrder(
             @PathVariable Long id,
             @Valid @RequestBody OrderRequest orderRequest) {
@@ -73,7 +73,7 @@ public class OrderController {
 
     @PatchMapping("/{id}/cancel")
     @Operation(summary = "Cancel an order")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAuthority('ORDER_UPDATE')")
     public ResponseEntity<OrderResponse> cancelOrder(@PathVariable Long id) {
         log.info("REST request to cancel order with id: {}", id);
         OrderResponse orderResponse = orderService.cancelOrder(id);
@@ -82,7 +82,7 @@ public class OrderController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete an order")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ORDER_DELETE')")
     public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
         log.info("REST request to delete order with id: {}", id);
         orderService.deleteOrder(id);

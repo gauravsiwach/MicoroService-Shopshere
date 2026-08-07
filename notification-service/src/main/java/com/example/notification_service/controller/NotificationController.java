@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class NotificationController {
 
     @PostMapping
     @Operation(summary = "Create a new notification")
+    @PreAuthorize("hasAuthority('NOTIFICATION_SEND')")
     public ResponseEntity<NotificationResponse> createNotification(@Valid @RequestBody NotificationRequest request) {
         log.info("REST request to create notification");
         NotificationResponse notificationResponse = notificationService.createNotification(request);
@@ -33,6 +35,7 @@ public class NotificationController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get notification by ID")
+    @PreAuthorize("hasAuthority('NOTIFICATION_READ')")
     public ResponseEntity<NotificationResponse> getNotificationById(@PathVariable Long id) {
         log.info("REST request to get notification by id: {}", id);
         NotificationResponse notificationResponse = notificationService.getNotificationById(id);
@@ -41,6 +44,7 @@ public class NotificationController {
 
     @GetMapping("/recipient/{recipient}")
     @Operation(summary = "Get notifications by recipient email")
+    @PreAuthorize("hasAuthority('NOTIFICATION_READ')")
     public ResponseEntity<List<NotificationResponse>> getNotificationsByRecipient(@PathVariable String recipient) {
         log.info("REST request to get notifications by recipient: {}", recipient);
         List<NotificationResponse> notifications = notificationService.getNotificationsByRecipient(recipient);
@@ -49,6 +53,7 @@ public class NotificationController {
 
     @GetMapping("/order/{orderNumber}")
     @Operation(summary = "Get notifications by order number")
+    @PreAuthorize("hasAuthority('NOTIFICATION_READ')")
     public ResponseEntity<List<NotificationResponse>> getNotificationsByOrderNumber(@PathVariable String orderNumber) {
         log.info("REST request to get notifications by order number: {}", orderNumber);
         List<NotificationResponse> notifications = notificationService.getNotificationsByOrderNumber(orderNumber);
@@ -57,6 +62,7 @@ public class NotificationController {
 
     @GetMapping("/status/{status}")
     @Operation(summary = "Get notifications by status")
+    @PreAuthorize("hasAuthority('NOTIFICATION_READ')")
     public ResponseEntity<List<NotificationResponse>> getNotificationsByStatus(@PathVariable String status) {
         log.info("REST request to get notifications by status: {}", status);
         List<NotificationResponse> notifications = notificationService.getNotificationsByStatus(status);
@@ -65,6 +71,7 @@ public class NotificationController {
 
     @GetMapping
     @Operation(summary = "Get all notifications")
+    @PreAuthorize("hasAuthority('NOTIFICATION_READ')")
     public ResponseEntity<List<NotificationResponse>> getAllNotifications() {
         log.info("REST request to get all notifications");
         List<NotificationResponse> notifications = notificationService.getAllNotifications();
@@ -73,6 +80,7 @@ public class NotificationController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a notification")
+    @PreAuthorize("hasAuthority('NOTIFICATION_SEND')")
     public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
         log.info("REST request to delete notification with id: {}", id);
         notificationService.deleteNotification(id);

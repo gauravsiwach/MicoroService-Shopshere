@@ -1,0 +1,134 @@
+version: '3.8'
+
+services:
+  config-server:
+    build: "./config-server "
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    networks:
+      - shopsphere-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/config-server/default"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  eureka-server:
+    build: ./DiscoverServer
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - shopsphere-network
+    depends_on:
+      config-server:
+        condition: service_healthy
+    environment:
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  api-gateway:
+    build: ./ApiGateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    networks:
+      - shopsphere-network
+    depends_on:
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
+
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    ports:
+      - "8084:8084"
+    networks:
+      - shopsphere-network
+    depends_on:
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://host.containers.internal:5433/orders_db
+      - SPRING_RABBITMQ_HOST=host.containers.internal
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  inventory-service:
+    build: ./inventory-service
+    container_name: inventory-service
+    ports:
+      - "8085:8085"
+    networks:
+      - shopsphere-network
+    depends_on:
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://host.containers.internal:5433/inventory_db
+      - SPRING_RABBITMQ_HOST=host.containers.internal
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    ports:
+      - "8086:8086"
+    networks:
+      - shopsphere-network
+    depends_on:
+      config-server:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    environment:
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://host.containers.internal:5433/notification_db
+      - SPRING_RABBITMQ_HOST=host.containers.internal
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  shopsphere-network:
+    driver: bridge
